@@ -22,11 +22,21 @@ workflows:
     scripts:
       - name: 打印环境信息
         script: |
-          echo "== Codemagic 构建环境 =="
+          echo "========== 环境信息 =========="
           echo "CM_BUILD_DIR: $CM_BUILD_DIR"
-          java -version
+          echo "Java版本:"
+          java -version 2>&1
+          echo ""
           echo "Android SDK: $ANDROID_SDK_ROOT"
-          gradle --version
+          echo "SDK 目录内容:"
+          ls -la $ANDROID_SDK_ROOT 2>&1 || echo "SDK 目录不存在"
+          echo ""
+          echo "Gradle版本:"
+          gradle --version 2>&1
+          echo ""
+          echo "CM_BUILD_DIR 内容:"
+          ls -la $CM_BUILD_DIR
+          echo "=============================="
 
       - name: 生成 local.properties
         script: |
@@ -36,12 +46,14 @@ workflows:
       - name: 构建 Debug APK
         script: |
           cd "$CM_BUILD_DIR"
-          gradle :app:assembleDebug --stacktrace --no-daemon
+          echo "开始构建..."
+          gradle :app:assembleDebug --stacktrace --no-daemon --info 2>&1 | head -200
+          echo "构建完成，退出码: $?"
 
       - name: 列出构建产物
         script: |
           echo "== 构建产物 =="
-          find "$CM_BUILD_DIR/app/build/outputs" -type f \( -name "*.apk" -o -name "*.aab" \) -exec ls -lh {} \;
+          find "$CM_BUILD_DIR/app/build/outputs" -type f 2>&1 || echo "没有产物目录"
 
     artifacts:
       - app/build/outputs/**/*.apk
