@@ -1,6 +1,5 @@
 # Codemagic CI/CD 配置文件
 # 项目：RemoteControl（局域网远程桌面控制 App）
-# 构建产物：app/build/outputs/apk/debug/app-debug.apk
 
 workflows:
   remote-control-android:
@@ -16,12 +15,8 @@ workflows:
       events:
         - push
         - pull_request
-        - tag
       branch_patterns:
         - pattern: main
-          include: true
-      tag_patterns:
-        - pattern: "v*"
           include: true
 
     scripts:
@@ -31,6 +26,7 @@ workflows:
           echo "CM_BUILD_DIR: $CM_BUILD_DIR"
           java -version
           echo "Android SDK: $ANDROID_SDK_ROOT"
+          gradle --version
 
       - name: 生成 local.properties
         script: |
@@ -40,9 +36,6 @@ workflows:
       - name: 构建 Debug APK
         script: |
           cd "$CM_BUILD_DIR"
-          # 检查 gradle 版本
-          gradle --version
-          # 直接用系统 gradle 构建
           gradle :app:assembleDebug --stacktrace --no-daemon
 
       - name: 列出构建产物
