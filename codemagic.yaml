@@ -27,10 +27,17 @@ workflows:
           java -version 2>&1
           echo "Android SDK: $ANDROID_SDK_ROOT"
           ls -la $ANDROID_SDK_ROOT 2>&1 || echo "SDK 不存在"
-          gradle --version 2>&1
           echo "工程目录:"
           ls -la $CM_BUILD_DIR
           echo "=============================="
+
+      - name: 安装 Gradle 8.9
+        script: |
+          cd /tmp
+          wget -q https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          unzip -q gradle-8.9-bin.zip
+          export PATH="/tmp/gradle-8.9/bin:$PATH"
+          gradle --version
 
       - name: 生成 local.properties
         script: |
@@ -39,6 +46,7 @@ workflows:
       - name: 构建 Debug APK
         script: |
           cd "$CM_BUILD_DIR"
+          export PATH="/tmp/gradle-8.9/bin:$PATH"
           gradle clean :app:assembleDebug --stacktrace --no-daemon
 
       - name: 列出构建产物
