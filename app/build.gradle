@@ -1,7 +1,5 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace 'com.example.remotecontrol'
@@ -9,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.remotecontrol"
-        minSdk 26          // Android 8.0+；鸿蒙4.x兼容层可运行
+        minSdk 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -40,7 +38,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.fragment:fragment-ktx:1.8.2'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
-    // 网络（FastAPI 调用）
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 }
