@@ -24,40 +24,32 @@ workflows:
         script: |
           echo "========== 环境信息 =========="
           echo "CM_BUILD_DIR: $CM_BUILD_DIR"
-          echo "Java版本:"
           java -version 2>&1
-          echo ""
           echo "Android SDK: $ANDROID_SDK_ROOT"
-          echo "SDK 目录内容:"
-          ls -la $ANDROID_SDK_ROOT 2>&1 || echo "SDK 目录不存在"
-          echo ""
-          echo "Gradle版本:"
+          ls -la $ANDROID_SDK_ROOT 2>&1 || echo "SDK 不存在"
           gradle --version 2>&1
-          echo ""
-          echo "CM_BUILD_DIR 内容:"
+          echo "工程目录:"
           ls -la $CM_BUILD_DIR
           echo "=============================="
 
       - name: 生成 local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-          cat "$CM_BUILD_DIR/local.properties"
 
       - name: 构建 Debug APK
         script: |
           cd "$CM_BUILD_DIR"
-          echo "开始构建..."
-          gradle :app:assembleDebug --stacktrace --no-daemon --info 2>&1 | head -200
-          echo "构建完成，退出码: $?"
+          gradle clean :app:assembleDebug --stacktrace --no-daemon
 
       - name: 列出构建产物
         script: |
-          echo "== 构建产物 =="
-          find "$CM_BUILD_DIR/app/build/outputs" -type f 2>&1 || echo "没有产物目录"
+          echo "== 查找 APK =="
+          find $CM_BUILD_DIR -name "*.apk" -type f 2>&1
+          echo "== app/build/outputs 目录 =="
+          ls -laR $CM_BUILD_DIR/app/build/outputs 2>&1 || echo "目录不存在"
 
     artifacts:
-      - app/build/outputs/**/*.apk
-      - app/build/outputs/**/*.aab
+      - "**/*.apk"
 
     cache:
       cache_paths:
