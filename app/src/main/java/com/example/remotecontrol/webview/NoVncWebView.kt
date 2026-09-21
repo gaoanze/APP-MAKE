@@ -2,6 +2,7 @@ package com.example.remotecontrol.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -22,11 +23,21 @@ import android.webkit.WebViewClient
  *  4. 通过 JS 注入加固：拦截 contextmenu / wheel / keydown，确保事件到达 VNC 画布
  */
 @SuppressLint("SetJavaScriptEnabled")
-class NoVncWebView(context: Context) : WebView(context) {
+class NoVncWebView : WebView {
 
     private var injected = false
 
-    init {
+    constructor(context: Context) : super(context) {
+        init()
+    }
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init()
+    }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init()
+    }
+
+    private fun init() {
         settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
