@@ -1,0 +1,105 @@
+# Codemagic CI/CD 配置文件
+# 项目：RemoteControl（局域网远程桌面控制 App）
+# 构建产物：app/build/outputs/apk/debug/app-debug.apk
+#
+# 使用方法：
+#   1. 把本仓库推到 GitHub
+#   2. 在 Codemagic (https://codemagic.io) 关联该仓库
+#   3. Codemagic 会自动读取本文件并触发构建
+#   4. 构建完成后在 Artifacts 下载 app-debug.apk
+#
+# 仓库根目录说明：
+#   Codemagic 把仓库根目录作为 $CM_BUILD_DIR，
+#   本文件位于仓库根（即 Gradle 工程根，与 settings.gradle 同级），
+#   Android 模块路径为 app/。
+
+workflows:
+  remote-control-android:
+    name: RemoteControl Android
+    max_build_duration: 60          # 最长 60 分钟
+    instance_type: linux             # Linux 构建机（Android 标准）
+    instance_type_backup: linux     # 备用机型
+
+    environment:
+      android:
+        sdk_version: "34"           # compileSdk 34
+      java:
+        version: "17"               # JDK 17（AGP 8.5.2 要求）
+      gradle:
+        version: "8.9"              # 与 gradle-wrapper.properties 一致
+
+      # 应用元信息（Codemagic 内部使用）
+      vars:
+        PACKAGE_NAME: com.example.remotecontrol
+        MODULE: app
+
+    # 触发条件：推送到 main 分支、打 tag、提 PR 都自动构建
+    triggering:
+      events:
+        - push
+        - pull_request
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+        - pattern: master
+          include: true
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+
+    # 执行脚本
+    scripts:
+      - name: 0. 打印环境信息
+        script: |
+          echo "== Codemagic 构建环境 =="
+          echo "CM_BUILD_DIR: $CM_BUILD_DIR"
+          java -version
+          echo "Gradle: $(gradle --version | head -n 5)"
+          echo "Android SDK: $ANDROID_SDK_ROOT"
+
+      - name: 1. 生成 local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+          echo "ndk.dir=$ANDROID_SDK_ROOT/ndk-bundle" >> "$CM_BUILD_DIR/local.properties"
+          cat "$CM_BUILD_DIR/local.properties"
+
+      - name: 2. 给 Gradle 可执行权限
+        script: |
+          chmod +x gradlew 2>/dev/null || true
+          ls -la "$CM_BUILD_DIR"
+
+      - name: 3. 清理并构建 Debug APK
+        script: |
+          cd "$CM_BUILD_DIR"
+          # 由于仓库未提交 gradlew 包装脚本，使用 Codemagic 自带的系统 gradle
+          gradle :app:clean :app:assembleDebug \
+            --stacktrace \
+            --no-daemon \
+            --build-cache
+
+      - name: 4. 列出构建产物
+        script: |
+          echo "== 构建产物 =="
+          find "$CM_BUILD_DIR/app/build/outputs" -type f \( -name "*.apk" -o -name "*.aab" \) -exec ls -lh {} \;
+
+    # 收集产物
+    artifacts:
+      - app/build/outputs/**/*.apk
+      - app/build/outputs/**/*.aab
+
+    # 构建完成后发邮件通知（可选；收件人留空则不发）
+    publishing:
+      email:
+        recipients:
+          - ""                      # 改成你的邮箱，例如 you@example.com
+        notify:
+          success: true
+          failure: true
+
+    # 缓存加速：Gradle 依赖和构建缓存
+    cache:
+      cache_paths:
+        - /root/.gradle/caches
+        - /root/.gradle/wrapper
+        - $CM_BUILD_DIR/app/build
