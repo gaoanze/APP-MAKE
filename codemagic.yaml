@@ -10,8 +10,6 @@ workflows:
 
     environment:
       java: "17"
-      android:
-        sdk_version: "34"
       vars:
         PACKAGE_NAME: com.example.remotecontrol
 
