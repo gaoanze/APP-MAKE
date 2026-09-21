@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 简单的显示器图标（前景） -->
+    <item
+        android:width="48dp"
+        android:height="36dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_monitor" />
+</layer-list>
