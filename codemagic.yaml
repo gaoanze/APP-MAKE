@@ -40,8 +40,10 @@ workflows:
       - name: 构建 Debug APK
         script: |
           cd "$CM_BUILD_DIR"
-          chmod +x gradlew 2>/dev/null || true
-          ./gradlew :app:assembleDebug --stacktrace --no-daemon || gradle :app:assembleDebug --stacktrace --no-daemon
+          # 检查 gradle 版本
+          gradle --version
+          # 直接用系统 gradle 构建
+          gradle :app:assembleDebug --stacktrace --no-daemon
 
       - name: 列出构建产物
         script: |
